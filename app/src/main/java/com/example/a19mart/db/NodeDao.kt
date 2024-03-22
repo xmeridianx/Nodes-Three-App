@@ -6,8 +6,6 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
-import com.example.a19mart.Node
 
 @Dao
 interface NodeDao {
@@ -25,4 +23,7 @@ interface NodeDao {
 
     @Query("SELECT * FROM nodes WHERE id = :id")
     suspend fun getNodeById(id: Int): Node?
+
+    @Query("SELECT * FROM nodes WHERE parent = :parentId")
+    suspend fun getChildNodes(parentId: Int): List<Node>
 }

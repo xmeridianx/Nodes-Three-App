@@ -2,13 +2,9 @@ package com.example.a19mart.db
 
 import android.app.Application
 import androidx.room.Database
-import androidx.room.DatabaseConfiguration
-import androidx.room.InvalidationTracker
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.sqlite.db.SupportSQLiteOpenHelper
-import com.example.a19mart.Node
 
 
 @Database(entities = [Node::class], version = 3)

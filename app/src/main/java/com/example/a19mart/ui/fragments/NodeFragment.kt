@@ -6,9 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import com.example.a19mart.Node
+import com.example.a19mart.db.Node
 import com.example.a19mart.R
-import com.example.a19mart.databinding.FragmentRootNodeBinding
+import com.example.a19mart.databinding.FragmentNodeBinding
 import com.example.a19mart.db.NodeDao
 import com.example.a19mart.db.NodeDatabase
 import com.example.a19mart.ui.adapters.ItemClickListener
@@ -19,21 +19,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.security.MessageDigest
 
-class RootNodeFragment : Fragment(), ItemClickListener {
+class NodeFragment : Fragment(), ItemClickListener {
 
     private lateinit var database: NodeDatabase
     private lateinit var nodeDao: NodeDao
     private val rootNode = Node(1, "root_address")
     private var adapter: NodeListAdapter? = null
-    private val binding: FragmentRootNodeBinding
+    private val binding: FragmentNodeBinding
         get() = requireNotNull(_binding)
-    private var _binding: FragmentRootNodeBinding? = null
+    private var _binding: FragmentNodeBinding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentRootNodeBinding.inflate(inflater, container, false)
+        _binding = FragmentNodeBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -44,15 +44,6 @@ class RootNodeFragment : Fragment(), ItemClickListener {
         val id = arguments?.getInt("id", 1) ?: 1
         adapter = NodeListAdapter(rootNode, this)
 
-        database = NodeDatabase.getInstance(requireActivity().application)!!
-        nodeDao = database.getNodeDao()
-        CoroutineScope(Dispatchers.IO).launch {
-            val node = nodeDao.getNodeById(id)
-            withContext(Dispatchers.Main) {
-                updateUIRootNode(node)
-            }
-        }
-
         binding.recyclerViewChildrens.adapter = adapter
         binding.buttonAddNode.setOnClickListener {
             val newNode =
@@ -62,7 +53,17 @@ class RootNodeFragment : Fragment(), ItemClickListener {
             adapter!!.notifyDataSetChanged()
         }
 
+        database = NodeDatabase.getInstance(requireActivity().application)!!
+        nodeDao = database.getNodeDao()
+        CoroutineScope(Dispatchers.IO).launch {
+            val node = nodeDao.getNodeById(id)
+            withContext(Dispatchers.Main) {
+                updateUIRootNode(node)
+            }
+        }
+        loadChildNodes(id)
     }
+
 
     private fun updateUIRootNode(node: Node?) {
         if (node != null) {
@@ -88,6 +89,16 @@ class RootNodeFragment : Fragment(), ItemClickListener {
         }
     }
 
+    private fun loadChildNodes(parentId: Int) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val childNodes = nodeDao.getChildNodes(parentId)
+            withContext(Dispatchers.Main) {
+                // Обновите пользовательский интерфейс, передав список дочерних узлов в адаптер
+                adapter?.submitList(childNodes)
+            }
+        }
+    }
+
 
     private fun insertNode(node: Node) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -97,8 +108,8 @@ class RootNodeFragment : Fragment(), ItemClickListener {
     }
 
     companion object {
-        fun newInstance(id: Int): RootNodeFragment {
-            val fragment = RootNodeFragment()
+        fun newInstance(id: Int): NodeFragment {
+            val fragment = NodeFragment()
             val args = Bundle()
             args.putInt("id", id)
             fragment.arguments = args

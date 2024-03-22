@@ -1,8 +1,9 @@
-package com.example.a19mart
+package com.example.a19mart.ui.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.a19mart.ui.fragments.RootNodeFragment
+import com.example.a19mart.R
+import com.example.a19mart.ui.fragments.NodeFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -12,7 +13,7 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.container, RootNodeFragment.newInstance(1))
+                .replace(R.id.container, NodeFragment.newInstance(1))
                 .commitNow()
         }
     }

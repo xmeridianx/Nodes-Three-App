@@ -6,7 +6,7 @@
     android:background="@color/white"
     android:elevation="@dimen/cardview_default_elevation"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.fragments.RootNodeFragment">
+    tools:context=".ui.fragments.NodeFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/rootContainer"

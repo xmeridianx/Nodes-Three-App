@@ -1,4 +1,4 @@
-package com.example.a19mart
+package com.example.a19mart.db
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
