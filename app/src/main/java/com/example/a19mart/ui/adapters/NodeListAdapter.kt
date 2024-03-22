@@ -1,5 +1,6 @@
 package com.example.a19mart.ui.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,12 +9,18 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.a19mart.NodeViewModel
 import com.example.a19mart.db.Node
 import com.example.a19mart.R
+import com.example.a19mart.db.NodeDao
+import com.example.a19mart.db.NodeDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.security.MessageDigest
 
 class NodeListAdapter(
-    private val node: Node,
+    private val nodeViewModel: NodeViewModel,
     private val onItemClickListener: ItemClickListener
 ): ListAdapter<Node, NodeListAdapter.NodeViewHolder>(NodeDiffCallback()){
 
@@ -37,7 +44,7 @@ class NodeListAdapter(
         holder.textViewNodeParent.isVisible = false
         //holder.textViewNodeParent.text = "Parent: ${node.parentId.toString()}"
         holder.buttonDelete.setOnClickListener {
-            removeItem(position)
+            nodeViewModel.deleteNode(node)
         }
         holder.itemView.setOnClickListener {
             onItemClickListener.onItemClick(node)
@@ -52,13 +59,5 @@ class NodeListAdapter(
         val last20Bytes = hashBytes.takeLast(20).toByteArray()
 
         return last20Bytes.joinToString("") { "%02x".format(it) }
-    }
-
-    private fun removeItem(position: Int) {
-        val position = currentList.indexOf(node)
-        val updatedList = currentList.toMutableList()
-        updatedList.remove(node)
-        submitList(updatedList)
-        notifyItemRemoved(position)
     }
 }

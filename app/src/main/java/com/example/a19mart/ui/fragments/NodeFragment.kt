@@ -6,10 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProvider
+import com.example.a19mart.NodeViewModel
 import com.example.a19mart.db.Node
 import com.example.a19mart.R
 import com.example.a19mart.databinding.FragmentNodeBinding
-import com.example.a19mart.db.NodeDao
 import com.example.a19mart.db.NodeDatabase
 import com.example.a19mart.ui.adapters.ItemClickListener
 import com.example.a19mart.ui.adapters.NodeListAdapter
@@ -21,9 +22,10 @@ import java.security.MessageDigest
 
 class NodeFragment : Fragment(), ItemClickListener {
 
-    private lateinit var database: NodeDatabase
-    private lateinit var nodeDao: NodeDao
-    private val rootNode = Node(1, "root_address")
+    private lateinit var nodeViewModel: NodeViewModel
+    //private lateinit var database: NodeDatabase
+    //private lateinit var nodeDao: NodeDao
+    //private val rootNode = Node(1, "root_address")
     private var adapter: NodeListAdapter? = null
     private val binding: FragmentNodeBinding
         get() = requireNotNull(_binding)
@@ -41,30 +43,29 @@ class NodeFragment : Fragment(), ItemClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        nodeViewModel = ViewModelProvider(this).get(NodeViewModel::class.java)
         val id = arguments?.getInt("id", 1) ?: 1
-        database = NodeDatabase.getInstance(requireActivity().application)!!
-        nodeDao = database.getNodeDao()
-        CoroutineScope(Dispatchers.IO).launch {
-            val node = nodeDao.getNodeById(id)
-            withContext(Dispatchers.Main) {
-                updateUIRootNode(node)
+        val node = nodeViewModel.getNodeById(id)
 
-                adapter = NodeListAdapter(rootNode, this@NodeFragment)
-                binding.recyclerViewChildrens.adapter = adapter
-                loadChildNodes(id)
+        nodeViewModel.allNodes.observe(viewLifecycleOwner){
+
+            adapter = NodeListAdapter(nodeViewModel, this@NodeFragment)
+            binding.recyclerViewChildrens.adapter = adapter
+            loadChildNodes(id)
+
+
+            binding.buttonAddNode.setOnClickListener {
+                val newNode =
+                    Node(address = "address: ${11111}", children = mutableListOf(), parentId = id)
+                insertNode(newNode)
+                val updatedList = adapter?.currentList?.toMutableList() ?: mutableListOf()
+                updatedList.add(newNode)
+                adapter?.submitList(updatedList)
             }
-        }
-
-        binding.buttonAddNode.setOnClickListener {
-            val newNode = Node(address = "address: ${11111}", children = mutableListOf(), parentId = id)
-            insertNode(newNode)
-            val updatedList = adapter?.currentList?.toMutableList() ?: mutableListOf()
-            updatedList.add(newNode)
-            adapter?.submitList(updatedList)
         }
     }
 
-
+/*
     private fun updateUIRootNode(node: Node?) {
         if (node != null) {
             if (node.id == 1){
@@ -89,11 +90,12 @@ class NodeFragment : Fragment(), ItemClickListener {
         }
     }
 
+ */
+
     private fun loadChildNodes(parentId: Int) {
         CoroutineScope(Dispatchers.IO).launch {
-            val childNodes = nodeDao.getChildNodes(parentId)
+            val childNodes = nodeViewModel.getChildNodes(parentId)
             withContext(Dispatchers.Main) {
-                // Обновите пользовательский интерфейс, передав список дочерних узлов в адаптер
                 adapter?.submitList(childNodes)
             }
         }
@@ -102,8 +104,8 @@ class NodeFragment : Fragment(), ItemClickListener {
 
     private fun insertNode(node: Node) {
         CoroutineScope(Dispatchers.IO).launch {
-            val nodeId = nodeDao.addNode(node)
-            node.id = nodeId.toInt()
+            val nodeId = nodeViewModel.insertNode(node)
+            node.id = nodeId
         }
     }
 
