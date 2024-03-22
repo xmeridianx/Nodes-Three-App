@@ -17,8 +17,6 @@ class NodeListAdapter(
     private val onItemClickListener: ItemClickListener
 ): ListAdapter<Node, NodeListAdapter.NodeViewHolder>(NodeDiffCallback()){
 
-    val nodeList: MutableList<Node> = mutableListOf()
-
     class NodeViewHolder(view: View): RecyclerView.ViewHolder(view) {
         val textViewNodeId: TextView = view.findViewById(R.id.textViewNodeId)
         val textViewNodeAddress: TextView = view.findViewById(R.id.textViewNodeAddress)
@@ -33,7 +31,7 @@ class NodeListAdapter(
     }
 
     override fun onBindViewHolder(holder: NodeViewHolder, position: Int) {
-        val node = nodeList[position]
+        val node = getItem(position)
         holder.textViewNodeId.text = "Id: ${node.id.toString()}"
         holder.textViewNodeAddress.text = "Address: ${generateAddress(node)}"
         holder.textViewNodeParent.isVisible = false
@@ -56,14 +54,11 @@ class NodeListAdapter(
         return last20Bytes.joinToString("") { "%02x".format(it) }
     }
 
-    override fun getItemCount(): Int {
-        return nodeList.size
-    }
-
-
     private fun removeItem(position: Int) {
-        nodeList.removeAt(position)
+        val position = currentList.indexOf(node)
+        val updatedList = currentList.toMutableList()
+        updatedList.remove(node)
+        submitList(updatedList)
         notifyItemRemoved(position)
-        notifyItemRangeChanged(position, itemCount)
     }
 }

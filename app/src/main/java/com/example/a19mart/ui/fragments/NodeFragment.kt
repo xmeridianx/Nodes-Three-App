@@ -42,26 +42,26 @@ class NodeFragment : Fragment(), ItemClickListener {
         super.onViewCreated(view, savedInstanceState)
 
         val id = arguments?.getInt("id", 1) ?: 1
-        adapter = NodeListAdapter(rootNode, this)
-
-        binding.recyclerViewChildrens.adapter = adapter
-        binding.buttonAddNode.setOnClickListener {
-            val newNode =
-                Node(address = "address: ${11111}", children = mutableListOf(), parentId = id)
-            insertNode(newNode)
-            adapter!!.nodeList.add(newNode)
-            adapter!!.notifyDataSetChanged()
-        }
-
         database = NodeDatabase.getInstance(requireActivity().application)!!
         nodeDao = database.getNodeDao()
         CoroutineScope(Dispatchers.IO).launch {
             val node = nodeDao.getNodeById(id)
             withContext(Dispatchers.Main) {
                 updateUIRootNode(node)
+
+                adapter = NodeListAdapter(rootNode, this@NodeFragment)
+                binding.recyclerViewChildrens.adapter = adapter
+                loadChildNodes(id)
             }
         }
-        loadChildNodes(id)
+
+        binding.buttonAddNode.setOnClickListener {
+            val newNode = Node(address = "address: ${11111}", children = mutableListOf(), parentId = id)
+            insertNode(newNode)
+            val updatedList = adapter?.currentList?.toMutableList() ?: mutableListOf()
+            updatedList.add(newNode)
+            adapter?.submitList(updatedList)
+        }
     }
 
 
