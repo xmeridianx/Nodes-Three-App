@@ -1,24 +1,27 @@
 package com.example.a19mart
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.a19mart.db.Node
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class NodeViewModel(application: Application) : ViewModel() {
 
     private val nodeRepository: NodeRepository = NodeRepository(application)
-    private val _nodeLiveData = MutableLiveData<Node>()
-    val nodeLiveData: LiveData<Node>
-        get() = _nodeLiveData
 
-    val allNodes: LiveData<List<Node>> = nodeRepository.allNodes
+    private var _state = MutableStateFlow<State?>(null)
+    val state: StateFlow<State?> = _state
+
+    private val _stateLiveData = MutableLiveData<State?>()
+    val stateLiveData: LiveData<State?>
+        get() = _stateLiveData
 
     fun deleteNode(node: Node) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -26,21 +29,26 @@ class NodeViewModel(application: Application) : ViewModel() {
         }
     }
 
-    fun getNodeById(id: Int) {
+   fun loadData(parentId: Int){
+       CoroutineScope(Dispatchers.IO).launch {
+           var rootNode = nodeRepository.getNodeById(parentId)
+           var nodeList = nodeRepository.getChildNodes(parentId)
+           _state.value = State(rootNode, nodeList)
+       }
+   }
+
+    fun getParentNode(): Node? {
+        return _state.value?.parentNode
+    }
+
+    /*
+    fun createNode(node: Node) {
         CoroutineScope(Dispatchers.IO).launch {
-            nodeRepository.getNodeById(id)
+            val newNode = nodeRepository.insertNode(node)
+            val oldState = state.value
+            state.value = State(oldState!!.parentNode, oldState!!.childNodeList)
         }
     }
 
-    fun getChildNodes(parentId: Int) {
-        CoroutineScope(Dispatchers.IO).launch {
-            nodeRepository.getChildNodes(parentId)
-        }
-    }
-
-    fun insertNode(node: Node) {
-        CoroutineScope(Dispatchers.IO).launch {
-            nodeRepository.insertNode(node)
-        }
-    }
+     */
 }
