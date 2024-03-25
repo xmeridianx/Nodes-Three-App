@@ -1,6 +1,7 @@
 package com.example.a19mart.ui.fragments
 
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -31,6 +32,7 @@ class NodeFragment : Fragment(), ItemClickListener {
     private lateinit var database: NodeDatabase
     private var adapter: NodeListAdapter? = null
     private var parentId: Int? = null
+
     private val binding: FragmentNodeBinding
         get() = requireNotNull(_binding)
     private var _binding: FragmentNodeBinding? = null
@@ -46,14 +48,16 @@ class NodeFragment : Fragment(), ItemClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val id = arguments?.getInt("id") ?: loadCurrentNodeId()
+
         database = NodeDatabase.getInstance(requireActivity().application)
         nodeDao = database.getNodeDao()
         val nodeRepository = NodeRepository(nodeDao)
         nodeViewModelFactory = NodeViewModelFactory(nodeRepository)
 
         nodeViewModel = ViewModelProvider(this, nodeViewModelFactory).get(NodeViewModel::class.java)
-        val id = arguments?.getInt("id", 1)
-
+        //val id = arguments?.getInt("id", 1)
+        Log.d("NodeFragment" , "$id")
         adapter = NodeListAdapter(nodeViewModel, this@NodeFragment)
         binding.recyclerViewChildrens.adapter = adapter
 
@@ -111,6 +115,21 @@ class NodeFragment : Fragment(), ItemClickListener {
             fragment.arguments = args
             return fragment
         }
+        private const val PREF_CURRENT_NODE_ID = "pref_current_node_id"
+    }
+
+    private fun saveCurrentNodeId(nodeId: Int) {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val editor = sharedPreferences.edit()
+        editor.putInt(PREF_CURRENT_NODE_ID, nodeId)
+        editor.apply()
+        Log.d("NodeFragment" , "saved id: $id")
+    }
+
+    private fun loadCurrentNodeId(): Int {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        return sharedPreferences.getInt(PREF_CURRENT_NODE_ID, 1)
+        Log.d("NodeFragment" , "loaded id: $id")
     }
 
     override fun onItemClick(node: Node) {
@@ -118,6 +137,11 @@ class NodeFragment : Fragment(), ItemClickListener {
             .replace(R.id.container, newInstance(node.id.toInt()))
             .addToBackStack(null)
             .commit()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        saveCurrentNodeId(parentId!!)
     }
 
     private fun generateRootAddress(id: Int): String {
