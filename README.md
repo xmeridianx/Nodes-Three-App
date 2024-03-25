@@ -12,6 +12,6 @@
 5. Название формировать из последних 20 байт хэша узла по аналогии с адресом кошельков Ethereum
 
 ## Итог
-
+![Screenshot](https://github.com/xmeridianx/Nodes-Three-App/blob/master/первыйскрин.png)
 
 
