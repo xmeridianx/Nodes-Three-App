@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
 )
 data class Node(
     @PrimaryKey(autoGenerate = true)
-    var id: Int = 0,
+    var id: Long = 0,
     val address: String,
     val children: MutableList<Node> = mutableListOf(),
     @ColumnInfo(name = "parent")

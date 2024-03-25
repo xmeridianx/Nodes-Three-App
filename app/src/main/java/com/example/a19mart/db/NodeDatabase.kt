@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 
-@Database(entities = [Node::class], version = 6)
+@Database(entities = [Node::class], version = 7)
 @TypeConverters(Converters::class)
 abstract class NodeDatabase : RoomDatabase() {
 

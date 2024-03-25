@@ -18,6 +18,9 @@ import com.example.a19mart.db.NodeDao
 import com.example.a19mart.db.NodeDatabase
 import com.example.a19mart.ui.adapters.ItemClickListener
 import com.example.a19mart.ui.adapters.NodeListAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.security.MessageDigest
 
 class NodeFragment : Fragment(), ItemClickListener {
@@ -27,7 +30,7 @@ class NodeFragment : Fragment(), ItemClickListener {
     private lateinit var nodeDao: NodeDao
     private lateinit var database: NodeDatabase
     private var adapter: NodeListAdapter? = null
-    private var parentId: Int = 1
+    private var parentId: Int? = null
     private val binding: FragmentNodeBinding
         get() = requireNotNull(_binding)
     private var _binding: FragmentNodeBinding? = null
@@ -49,21 +52,19 @@ class NodeFragment : Fragment(), ItemClickListener {
         nodeViewModelFactory = NodeViewModelFactory(nodeRepository)
 
         nodeViewModel = ViewModelProvider(this, nodeViewModelFactory).get(NodeViewModel::class.java)
-        val id = arguments?.getInt("id", parentId)
+        val id = arguments?.getInt("id", 1)
 
         adapter = NodeListAdapter(nodeViewModel, this@NodeFragment)
         binding.recyclerViewChildrens.adapter = adapter
 
-        binding.textViewParent.setOnClickListener {
-            val newFragment = newInstance(parentId)
-            requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.container, newFragment)
-                .addToBackStack(null)
-                .commit()
+        binding.buttonBack.setOnClickListener {
+            navigateBack()
         }
+
         nodeViewModel.loadData(id!!)
         nodeViewModel.state.observe(viewLifecycleOwner) { state ->
             if (state != null) {
+                parentId = state?.parentNode?.parentId
                 binding.textViewNodeId.text = "Id: $id"
                 val parentAddress = generateRootAddress(id)
                 binding.textViewNodeAddress.text = "Address: $parentAddress"
@@ -72,22 +73,33 @@ class NodeFragment : Fragment(), ItemClickListener {
                     adapter?.submitList(childNodes)
                 }
                 if (id == 1) {
-                    binding.textViewParent.isVisible = false
                     binding.buttonDelete.isVisible = false
                 }
             }
 
-            adapter?.submitList(state?.childNodeList)
-
-
             binding.buttonAddNode.setOnClickListener {
-                nodeViewModel.createNode(id).observe(viewLifecycleOwner) {
-                    val updatedList = adapter?.currentList?.toMutableList() ?: mutableListOf()
-                    updatedList.add(it)
-                    adapter?.submitList(updatedList)
+                nodeViewModel.createNode(id)
+            }
+
+            binding.buttonDelete.setOnClickListener {
+                val parentNode = state?.parentNode
+                if (parentNode != null) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        nodeRepository.deleteNode(parentNode)
+                        navigateBack()
+                    }
                 }
             }
-            Log.d("NodeFragment", "$parentId")
+        }
+    }
+
+    private fun navigateBack() {
+        if (parentId != null) {
+            val newFragment = newInstance(parentId!!)
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.container, newFragment)
+                .addToBackStack(null)
+                .commit()
         }
     }
 
@@ -103,7 +115,7 @@ class NodeFragment : Fragment(), ItemClickListener {
 
     override fun onItemClick(node: Node) {
         requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.container, newInstance(node.id))
+            .replace(R.id.container, newInstance(node.id.toInt()))
             .addToBackStack(null)
             .commit()
     }

@@ -27,5 +27,4 @@ interface NodeDao {
 
     @Delete
     suspend fun deleteNode(node: Node)
-
 }

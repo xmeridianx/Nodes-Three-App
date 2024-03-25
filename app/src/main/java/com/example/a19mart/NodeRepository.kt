@@ -35,9 +35,9 @@ class NodeRepository(private val nodeDao: NodeDao) {
 
     suspend fun insertNode(parentId: Int): Node {
         return withContext(Dispatchers.IO) {
-            val newNode = Node(address = "address: ", children = mutableListOf(), parentId = parentId)
-            nodeDao.addNode(newNode)
-            return@withContext newNode
+            val node = Node(address = "address: ", children = mutableListOf(), parentId = parentId)
+            val newId = nodeDao.addNode(node)
+            return@withContext node.copy(id = newId)
         }
     }
 }

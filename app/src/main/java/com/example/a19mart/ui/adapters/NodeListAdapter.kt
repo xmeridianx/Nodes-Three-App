@@ -21,7 +21,6 @@ class NodeListAdapter(
     class NodeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textViewNodeId: TextView = view.findViewById(R.id.textViewNodeId)
         val textViewNodeAddress: TextView = view.findViewById(R.id.textViewNodeAddress)
-        val textViewNodeParent: TextView = view.findViewById(R.id.textViewParent)
         val buttonDelete: ImageButton = view.findViewById(R.id.buttonDelete)
     }
 
@@ -35,8 +34,6 @@ class NodeListAdapter(
         val node = getItem(position)
         holder.textViewNodeId.text = "Id: ${node.id.toString()}"
         holder.textViewNodeAddress.text = "Address: ${generateAddress(node)}"
-        holder.textViewNodeParent.isVisible = false
-        //holder.textViewNodeParent.text = "Parent: ${node.parentId.toString()}"
         holder.buttonDelete.setOnClickListener {
             nodeViewModel.deleteNode(node)
         }

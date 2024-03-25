@@ -24,24 +24,22 @@ class NodeViewModel(private val nodeRepository: NodeRepository) : ViewModel() {
         }
     }
 
-    fun getParentNode(): Node? {
-        return _state.value?.parentNode
-    }
-
-    fun createNode(parentId: Int): LiveData<Node> {
-        val newNodeLiveData = MutableLiveData<Node>()
+    fun createNode(parentId: Int) {
         CoroutineScope(Dispatchers.IO).launch {
-            val oldState = _state.value
-            _state.postValue(State(oldState!!.parentNode, oldState.childNodeList))
             val node = nodeRepository.insertNode(parentId)
-            newNodeLiveData.postValue(node)
+            val newList = state.value!!.childNodeList + node
+            val newState = State(state.value?.parentNode, newList)
+            _state.postValue(newState)
         }
-        return newNodeLiveData
     }
 
     fun deleteNode(node: Node) {
         CoroutineScope(Dispatchers.IO).launch {
             nodeRepository.deleteNode(node)
+            val newList = state.value!!.childNodeList.toMutableList()
+            newList.remove(node)
+            val newState = State(state.value?.parentNode, newList)
+            _state.postValue(newState)
         }
     }
 }
