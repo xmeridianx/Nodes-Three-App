@@ -7,13 +7,13 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 
-@Database(entities = [Node::class], version = 3)
+@Database(entities = [Node::class], version = 6)
 @TypeConverters(Converters::class)
-abstract class NodeDatabase: RoomDatabase() {
+abstract class NodeDatabase : RoomDatabase() {
 
     abstract fun getNodeDao(): NodeDao
 
-    companion object{
+    companion object {
         @Volatile
         private var instance: NodeDatabase? = null
 

@@ -25,8 +25,7 @@ interface NodeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addNode(node: Node): Long
 
-    //@Delete
-    //suspend fun deleteNode(node: Node)
-
+    @Delete
+    suspend fun deleteNode(node: Node)
 
 }

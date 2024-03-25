@@ -9,16 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class NodeRepository (application: Application) {
+class NodeRepository(private val nodeDao: NodeDao) {
 
-    private val nodeDao: NodeDao
-
-    init {
-        val database = NodeDatabase.getInstance(application)
-        nodeDao = database.getNodeDao()
-    }
-
-    fun loadNodes(parentId: Int): List<Node>{
+    fun loadNodes(parentId: Int): List<Node> {
         return nodeDao.getAll()
     }
 
@@ -29,16 +22,22 @@ class NodeRepository (application: Application) {
     }
 
     suspend fun deleteNode(node: Node) {
-      //  nodeDao.deleteNode(node)
+        return withContext(Dispatchers.IO) {
+            nodeDao.deleteNode(node)
+        }
     }
 
-    suspend fun getChildNodes(parentId: Int): List<Node>{
+    suspend fun getChildNodes(parentId: Int): List<Node> {
         return withContext(Dispatchers.IO) {
             nodeDao.getChildNodes(parentId)
         }
     }
 
-    suspend fun insertNode(node: Node) {
-       // nodeDao.addNode(node)
+    suspend fun insertNode(parentId: Int): Node {
+        return withContext(Dispatchers.IO) {
+            val newNode = Node(address = "address: ", children = mutableListOf(), parentId = parentId)
+            nodeDao.addNode(newNode)
+            return@withContext newNode
+        }
     }
 }

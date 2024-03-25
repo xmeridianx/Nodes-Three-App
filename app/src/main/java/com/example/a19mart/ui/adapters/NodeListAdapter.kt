@@ -1,6 +1,5 @@
 package com.example.a19mart.ui.adapters
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,22 +8,17 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.a19mart.NodeViewModel
+import com.example.a19mart.viewmodel.NodeViewModel
 import com.example.a19mart.db.Node
 import com.example.a19mart.R
-import com.example.a19mart.db.NodeDao
-import com.example.a19mart.db.NodeDatabase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.security.MessageDigest
 
 class NodeListAdapter(
     private val nodeViewModel: NodeViewModel,
     private val onItemClickListener: ItemClickListener
-): ListAdapter<Node, NodeListAdapter.NodeViewHolder>(NodeDiffCallback()){
+) : ListAdapter<Node, NodeListAdapter.NodeViewHolder>(NodeDiffCallback()) {
 
-    class NodeViewHolder(view: View): RecyclerView.ViewHolder(view) {
+    class NodeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textViewNodeId: TextView = view.findViewById(R.id.textViewNodeId)
         val textViewNodeAddress: TextView = view.findViewById(R.id.textViewNodeAddress)
         val textViewNodeParent: TextView = view.findViewById(R.id.textViewParent)
@@ -55,9 +49,7 @@ class NodeListAdapter(
         val idBytes = node.id.toString().toByteArray()
         val md = MessageDigest.getInstance("SHA-256")
         val hashBytes = md.digest(idBytes)
-
         val last20Bytes = hashBytes.takeLast(20).toByteArray()
-
         return last20Bytes.joinToString("") { "%02x".format(it) }
     }
 }
