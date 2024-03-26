@@ -1,5 +1,7 @@
 package com.example.a19mart.ui.fragments
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
@@ -30,12 +32,18 @@ class NodeFragment : Fragment(), ItemClickListener {
     private lateinit var nodeViewModelFactory: NodeViewModelFactory
     private lateinit var nodeDao: NodeDao
     private lateinit var database: NodeDatabase
+    private lateinit var sharedPreferences: SharedPreferences
     private var adapter: NodeListAdapter? = null
-    private var parentId: Int? = null
+    private var parentId: Long? = null
 
     private val binding: FragmentNodeBinding
         get() = requireNotNull(_binding)
     private var _binding: FragmentNodeBinding? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sharedPreferences = requireContext().getSharedPreferences("CURRENT_NODE_ID", Context.MODE_PRIVATE)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,16 +56,14 @@ class NodeFragment : Fragment(), ItemClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val id = arguments?.getInt("id") ?: loadCurrentNodeId()
+        val currentNodeId = sharedPreferences.getLong("CURRENT_NODE_ID", 1)
 
         database = NodeDatabase.getInstance(requireActivity().application)
         nodeDao = database.getNodeDao()
-        val nodeRepository = NodeRepository(nodeDao)
-        nodeViewModelFactory = NodeViewModelFactory(nodeRepository)
+        val nodeRepository = NodeRepository(nodeDao, sharedPreferences)
+        nodeViewModelFactory = NodeViewModelFactory(nodeRepository, sharedPreferences)
 
         nodeViewModel = ViewModelProvider(this, nodeViewModelFactory).get(NodeViewModel::class.java)
-        //val id = arguments?.getInt("id", 1)
-        Log.d("NodeFragment" , "$id")
         adapter = NodeListAdapter(nodeViewModel, this@NodeFragment)
         binding.recyclerViewChildrens.adapter = adapter
 
@@ -65,24 +71,23 @@ class NodeFragment : Fragment(), ItemClickListener {
             navigateBack()
         }
 
-        nodeViewModel.loadData(id!!)
         nodeViewModel.state.observe(viewLifecycleOwner) { state ->
             if (state != null) {
-                parentId = state?.parentNode?.parentId
-                binding.textViewNodeId.text = "Id: $id"
-                val parentAddress = generateRootAddress(id)
+                parentId = state.parentNode?.parentId!!
+                binding.textViewNodeId.text = "Id: $currentNodeId"
+                val parentAddress = generateRootAddress(currentNodeId!!)
                 binding.textViewNodeAddress.text = "Address: $parentAddress"
                 val childNodes = state.childNodeList
                 if (childNodes != null) {
                     adapter?.submitList(childNodes)
                 }
-                if (id == 1) {
+                if (state.parentNode == null) {
                     binding.buttonDelete.isVisible = false
                 }
             }
 
             binding.buttonAddNode.setOnClickListener {
-                nodeViewModel.createNode(id)
+                nodeViewModel.createNode(currentNodeId!!)
             }
 
             binding.buttonDelete.setOnClickListener {
@@ -95,6 +100,7 @@ class NodeFragment : Fragment(), ItemClickListener {
                 }
             }
         }
+        nodeViewModel.loadData(currentNodeId!!)
     }
 
     private fun navigateBack() {
@@ -108,43 +114,28 @@ class NodeFragment : Fragment(), ItemClickListener {
     }
 
     companion object {
-        fun newInstance(id: Int): NodeFragment {
+        fun newInstance(id: Long): NodeFragment {
             val fragment = NodeFragment()
             val args = Bundle()
-            args.putInt("id", id)
+            args.putLong(CURRENT_NODE_ID_KEY, id)
             fragment.arguments = args
             return fragment
         }
-        private const val PREF_CURRENT_NODE_ID = "pref_current_node_id"
-    }
 
-    private fun saveCurrentNodeId(nodeId: Int) {
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-        val editor = sharedPreferences.edit()
-        editor.putInt(PREF_CURRENT_NODE_ID, nodeId)
-        editor.apply()
-        Log.d("NodeFragment" , "saved id: $id")
-    }
-
-    private fun loadCurrentNodeId(): Int {
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-        return sharedPreferences.getInt(PREF_CURRENT_NODE_ID, 1)
-        Log.d("NodeFragment" , "loaded id: $id")
+        const val CURRENT_NODE_ID_KEY = "CURRENT_NODE_ID"
     }
 
     override fun onItemClick(node: Node) {
         requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.container, newInstance(node.id.toInt()))
+            .replace(R.id.container, newInstance(node.id))
             .addToBackStack(null)
             .commit()
+
+        parentId = node.id
+        sharedPreferences.edit().putLong(CURRENT_NODE_ID_KEY, node.id).apply()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        saveCurrentNodeId(parentId!!)
-    }
-
-    private fun generateRootAddress(id: Int): String {
+    private fun generateRootAddress(id: Long): String {
         val idBytes = id.toString().toByteArray()
         val md = MessageDigest.getInstance("SHA-256")
         val hashBytes = md.digest(idBytes)

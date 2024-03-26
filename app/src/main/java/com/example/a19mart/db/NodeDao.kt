@@ -14,13 +14,10 @@ interface NodeDao {
     fun getAll(): List<Node>
 
     @Query("SELECT * FROM nodes WHERE id = :id")
-    suspend fun getNodeById(id: Int): Node
-
-    @Query("SELECT * FROM nodes WHERE parent = :parentId")
-    suspend fun getNodeByParentId(parentId: Int): List<Node>
+    suspend fun getNodeById(id: Long): Node
 
     @Query("SELECT * FROM nodes WHERE parent = :parentId AND id != :parentId")
-    suspend fun getChildNodes(parentId: Int): List<Node>
+    suspend fun getChildNodes(parentId: Long): List<Node>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addNode(node: Node): Long

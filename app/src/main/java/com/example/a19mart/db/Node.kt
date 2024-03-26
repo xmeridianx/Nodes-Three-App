@@ -13,5 +13,5 @@ data class Node(
     val address: String,
     val children: MutableList<Node> = mutableListOf(),
     @ColumnInfo(name = "parent")
-    var parentId: Int? = null
+    var parentId: Long? = null
 )
