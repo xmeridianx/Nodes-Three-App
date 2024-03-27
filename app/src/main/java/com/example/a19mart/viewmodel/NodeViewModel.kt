@@ -3,32 +3,35 @@ package com.example.a19mart.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.a19mart.NodeRepository
-import com.example.a19mart.db.Node
+import com.example.a19mart.data.repository.NodeRepository
+import com.example.a19mart.data.model.Node
+import com.example.a19mart.model.State
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class NodeViewModel(private val nodeRepository: NodeRepository) : ViewModel() {
 
-
     private var _state = MutableLiveData<State?>()
     val state: LiveData<State?>
         get() = _state
 
-    fun loadData(parentId: Int) {
+    fun loadData(id: Int) {
         CoroutineScope(Dispatchers.IO).launch {
-            var rootNode = nodeRepository.getNodeById(parentId)
-            var nodeList = nodeRepository.getChildNodes(parentId)
-            _state.postValue(State(rootNode, nodeList))
+            var currentNode = nodeRepository.getNodeById(id)
+            if (currentNode == null) {
+                currentNode = nodeRepository.insertNode(null)
+            }
+            var nodeList = nodeRepository.getChildNodes(id)
+            _state.postValue(State(currentNode, nodeList))
         }
     }
 
-    fun createNode(parentId: Int) {
+    fun createNode(id: Int) {
         CoroutineScope(Dispatchers.IO).launch {
-            val node = nodeRepository.insertNode(parentId)
+            val node = nodeRepository.insertNode(id)
             val newList = state.value!!.childNodeList + node
-            val newState = State(state.value?.parentNode, newList)
+            val newState = State(state?.value?.currentNode!!, newList)
             _state.postValue(newState)
         }
     }
@@ -38,7 +41,7 @@ class NodeViewModel(private val nodeRepository: NodeRepository) : ViewModel() {
             nodeRepository.deleteNode(node)
             val newList = state.value!!.childNodeList.toMutableList()
             newList.remove(node)
-            val newState = State(state.value?.parentNode, newList)
+            val newState = State(state?.value?.currentNode!!, newList)
             _state.postValue(newState)
         }
     }

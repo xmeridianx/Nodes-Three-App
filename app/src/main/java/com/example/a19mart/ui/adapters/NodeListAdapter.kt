@@ -5,11 +5,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.a19mart.viewmodel.NodeViewModel
-import com.example.a19mart.db.Node
+import com.example.a19mart.data.model.Node
 import com.example.a19mart.R
 import java.security.MessageDigest
 

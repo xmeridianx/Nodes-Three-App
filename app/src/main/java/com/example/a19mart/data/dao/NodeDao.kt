@@ -1,12 +1,11 @@
-package com.example.a19mart.db
+package com.example.a19mart.data.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
+import com.example.a19mart.data.model.Node
 
 @Dao
 interface NodeDao {
@@ -14,7 +13,7 @@ interface NodeDao {
     fun getAll(): List<Node>
 
     @Query("SELECT * FROM nodes WHERE id = :id")
-    suspend fun getNodeById(id: Int): Node
+    suspend fun getNodeById(id: Int): Node?
 
     @Query("SELECT * FROM nodes WHERE parent = :parentId")
     suspend fun getNodeByParentId(parentId: Int): List<Node>

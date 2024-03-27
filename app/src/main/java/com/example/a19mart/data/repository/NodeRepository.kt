@@ -1,21 +1,13 @@
-package com.example.a19mart
+package com.example.a19mart.data.repository
 
-import android.app.Application
-import androidx.lifecycle.LiveData
-import com.example.a19mart.db.NodeDao
-import com.example.a19mart.db.NodeDatabase
-import com.example.a19mart.db.Node
+import com.example.a19mart.data.dao.NodeDao
+import com.example.a19mart.data.model.Node
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 class NodeRepository(private val nodeDao: NodeDao) {
 
-    fun loadNodes(parentId: Int): List<Node> {
-        return nodeDao.getAll()
-    }
-
-    suspend fun getNodeById(id: Int): Node {
+    suspend fun getNodeById(id: Int): Node? {
         return withContext(Dispatchers.IO) {
             nodeDao.getNodeById(id)
         }
@@ -33,7 +25,7 @@ class NodeRepository(private val nodeDao: NodeDao) {
         }
     }
 
-    suspend fun insertNode(parentId: Int): Node {
+    suspend fun insertNode(parentId: Int?): Node {
         return withContext(Dispatchers.IO) {
             val node = Node(address = "address: ", children = mutableListOf(), parentId = parentId)
             val newId = nodeDao.addNode(node)

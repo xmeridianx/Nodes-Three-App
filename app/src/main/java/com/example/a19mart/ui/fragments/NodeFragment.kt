@@ -9,14 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
-import com.example.a19mart.NodeRepository
+import com.example.a19mart.data.repository.NodeRepository
 import com.example.a19mart.viewmodel.NodeViewModel
 import com.example.a19mart.viewmodel.NodeViewModelFactory
-import com.example.a19mart.db.Node
+import com.example.a19mart.data.model.Node
 import com.example.a19mart.R
 import com.example.a19mart.databinding.FragmentNodeBinding
-import com.example.a19mart.db.NodeDao
-import com.example.a19mart.db.NodeDatabase
+import com.example.a19mart.data.dao.NodeDao
+import com.example.a19mart.data.database.NodeDatabase
 import com.example.a19mart.ui.adapters.ItemClickListener
 import com.example.a19mart.ui.adapters.NodeListAdapter
 import kotlinx.coroutines.CoroutineScope
@@ -56,8 +56,7 @@ class NodeFragment : Fragment(), ItemClickListener {
         nodeViewModelFactory = NodeViewModelFactory(nodeRepository)
 
         nodeViewModel = ViewModelProvider(this, nodeViewModelFactory).get(NodeViewModel::class.java)
-        //val id = arguments?.getInt("id", 1)
-        Log.d("NodeFragment" , "$id")
+        Log.d("NodeFragment", "$id")
         adapter = NodeListAdapter(nodeViewModel, this@NodeFragment)
         binding.recyclerViewChildrens.adapter = adapter
 
@@ -65,10 +64,9 @@ class NodeFragment : Fragment(), ItemClickListener {
             navigateBack()
         }
 
-        nodeViewModel.loadData(id!!)
         nodeViewModel.state.observe(viewLifecycleOwner) { state ->
             if (state != null) {
-                parentId = state?.parentNode?.parentId
+                parentId = state?.currentNode?.parentId
                 binding.textViewNodeId.text = "Id: $id"
                 val parentAddress = generateRootAddress(id)
                 binding.textViewNodeAddress.text = "Address: $parentAddress"
@@ -86,7 +84,7 @@ class NodeFragment : Fragment(), ItemClickListener {
             }
 
             binding.buttonDelete.setOnClickListener {
-                val parentNode = state?.parentNode
+                val parentNode = state?.currentNode
                 if (parentNode != null) {
                     CoroutineScope(Dispatchers.IO).launch {
                         nodeRepository.deleteNode(parentNode)
@@ -95,6 +93,7 @@ class NodeFragment : Fragment(), ItemClickListener {
                 }
             }
         }
+        nodeViewModel.loadData(id!!)
     }
 
     private fun navigateBack() {
@@ -115,6 +114,7 @@ class NodeFragment : Fragment(), ItemClickListener {
             fragment.arguments = args
             return fragment
         }
+
         private const val PREF_CURRENT_NODE_ID = "pref_current_node_id"
     }
 
@@ -123,13 +123,11 @@ class NodeFragment : Fragment(), ItemClickListener {
         val editor = sharedPreferences.edit()
         editor.putInt(PREF_CURRENT_NODE_ID, nodeId)
         editor.apply()
-        Log.d("NodeFragment" , "saved id: $id")
     }
 
     private fun loadCurrentNodeId(): Int {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         return sharedPreferences.getInt(PREF_CURRENT_NODE_ID, 1)
-        Log.d("NodeFragment" , "loaded id: $id")
     }
 
     override fun onItemClick(node: Node) {
