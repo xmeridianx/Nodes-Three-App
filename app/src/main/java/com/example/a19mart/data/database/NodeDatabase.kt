@@ -1,23 +1,23 @@
-package com.example.a19mart.db
+package com.example.a19mart.data.database
 
 import android.app.Application
 import androidx.room.Database
-import androidx.room.DatabaseConfiguration
-import androidx.room.InvalidationTracker
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.sqlite.db.SupportSQLiteOpenHelper
-import com.example.a19mart.Node
+import com.example.a19mart.data.model.Converters
+import com.example.a19mart.data.model.Node
+import com.example.a19mart.data.dao.NodeDao
 
 
-@Database(entities = [Node::class], version = 3)
+@Database(entities = [Node::class], version = 14)
 @TypeConverters(Converters::class)
-abstract class NodeDatabase: RoomDatabase() {
+abstract class NodeDatabase : RoomDatabase() {
 
     abstract fun getNodeDao(): NodeDao
 
-    companion object{
+
+    companion object {
         @Volatile
         private var instance: NodeDatabase? = null
 

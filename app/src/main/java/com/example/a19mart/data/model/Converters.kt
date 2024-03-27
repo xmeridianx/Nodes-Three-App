@@ -1,7 +1,7 @@
-package com.example.a19mart.db
+package com.example.a19mart.data.model
 
 import androidx.room.TypeConverter
-import com.example.a19mart.Node
+import com.example.a19mart.data.model.Node
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 

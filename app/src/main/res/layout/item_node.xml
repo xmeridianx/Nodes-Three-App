@@ -16,6 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="16sp"
         android:textStyle="bold"
+        android:textColor="@color/white"
         android:text="Id:"
         android:layout_marginTop="16dp"/>
 
@@ -25,18 +26,8 @@
         android:layout_height="wrap_content"
         android:text="Address:"
         android:textStyle="bold"
+        android:textColor="@color/white"
         app:layout_constraintTop_toBottomOf="@+id/textViewNodeId"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="16sp"
-        android:layout_marginTop="16dp" />
-
-    <TextView
-        android:id="@+id/textViewParent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Parent??"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/textViewNodeAddress"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="16sp"
         android:layout_marginTop="16dp" />
@@ -46,7 +37,7 @@
         android:layout_width="42dp"
         android:layout_height="42dp"
         android:src="@drawable/icon_delete"
-        app:layout_constraintTop_toBottomOf="@+id/textViewParent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewNodeAddress"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="16sp"
         app:layout_constraintBottom_toBottomOf="parent"

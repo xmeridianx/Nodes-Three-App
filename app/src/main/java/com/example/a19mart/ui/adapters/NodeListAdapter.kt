@@ -5,23 +5,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.core.view.isVisible
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.a19mart.Node
+import com.example.a19mart.viewmodel.NodeViewModel
+import com.example.a19mart.data.model.Node
 import com.example.a19mart.R
 import java.security.MessageDigest
 
 class NodeListAdapter(
-    private val node: Node,
+    private val nodeViewModel: NodeViewModel,
     private val onItemClickListener: ItemClickListener
-): RecyclerView.Adapter<NodeListAdapter.NodeViewHolder>() {
+) : ListAdapter<Node, NodeListAdapter.NodeViewHolder>(NodeDiffCallback()) {
 
-    val nodeList: MutableList<Node> = mutableListOf()
-
-    class NodeViewHolder(view: View): RecyclerView.ViewHolder(view) {
+    class NodeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textViewNodeId: TextView = view.findViewById(R.id.textViewNodeId)
         val textViewNodeAddress: TextView = view.findViewById(R.id.textViewNodeAddress)
-        val textViewNodeParent: TextView = view.findViewById(R.id.textViewParent)
         val buttonDelete: ImageButton = view.findViewById(R.id.buttonDelete)
     }
 
@@ -32,13 +30,11 @@ class NodeListAdapter(
     }
 
     override fun onBindViewHolder(holder: NodeViewHolder, position: Int) {
-        val node = nodeList[position]
+        val node = getItem(position)
         holder.textViewNodeId.text = "Id: ${node.id.toString()}"
         holder.textViewNodeAddress.text = "Address: ${generateAddress(node)}"
-        holder.textViewNodeParent.isVisible = false
-        //holder.textViewNodeParent.text = "Parent: ${node.parentId.toString()}"
         holder.buttonDelete.setOnClickListener {
-            removeItem(position)
+            nodeViewModel.deleteNode(node)
         }
         holder.itemView.setOnClickListener {
             onItemClickListener.onItemClick(node)
@@ -49,19 +45,7 @@ class NodeListAdapter(
         val idBytes = node.id.toString().toByteArray()
         val md = MessageDigest.getInstance("SHA-256")
         val hashBytes = md.digest(idBytes)
-
         val last20Bytes = hashBytes.takeLast(20).toByteArray()
-
         return last20Bytes.joinToString("") { "%02x".format(it) }
-    }
-
-    override fun getItemCount(): Int {
-        return nodeList.size
-    }
-
-    private fun removeItem(position: Int) {
-        nodeList.removeAt(position)
-        notifyItemRemoved(position)
-        notifyItemRangeChanged(position, itemCount)
     }
 }

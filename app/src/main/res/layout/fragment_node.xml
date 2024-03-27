@@ -6,11 +6,30 @@
     android:background="@color/white"
     android:elevation="@dimen/cardview_default_elevation"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.fragments.RootNodeFragment">
+    tools:context=".ui.fragments.NodeFragment">
+
+    <androidx.appcompat.widget.Toolbar
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#A6B2DF"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
+
+        <ImageButton
+            android:id="@+id/buttonBack"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:backgroundTint="#A6B2DF"
+            android:src="@drawable/icon_back"/>
+    </androidx.appcompat.widget.Toolbar>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/rootContainer"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/recyclerViewChildrens"
@@ -26,7 +45,9 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="16sp"
+            android:textColor="@color/white"
             android:textStyle="bold"
+            android:textSize="20sp"
             android:text="Id:"
             android:layout_marginTop="16dp"/>
 
@@ -36,28 +57,19 @@
             android:layout_height="wrap_content"
             android:text="Address:"
             android:textStyle="bold"
+            android:textColor="@color/white"
             app:layout_constraintTop_toBottomOf="@+id/textViewNodeId"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="16sp"
             android:layout_marginTop="16dp" />
 
-        <TextView
-            android:id="@+id/textViewParent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Parent??"
-            android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@+id/textViewNodeAddress"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="16sp"
-            android:layout_marginTop="16dp" />
 
         <ImageButton
             android:id="@+id/buttonDelete"
             android:layout_width="42dp"
             android:layout_height="42dp"
             android:src="@drawable/icon_delete"
-            app:layout_constraintTop_toBottomOf="@+id/textViewParent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewNodeAddress"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
